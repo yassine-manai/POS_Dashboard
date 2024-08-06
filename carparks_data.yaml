@@ -1,0 +1,25 @@
+carparks:
+- id: 7030
+  name: Dasman Complex
+  pos:
+  - ip: 192.168.1.7
+    name: POS 741
+    password: astero4711
+    site: null
+    username: astero
+  - ip: 192.168.1.7
+    name: dev
+    password: astero4711
+    site: site
+    username: astero
+- id: 7210
+  name: Meet souk
+  pos:
+  - ip: 192.168.1.7
+    name: POS 741
+    password: astero4711
+    site: null
+    username: astero
+- id: 15
+  name: SARAFIN
+  pos: []
