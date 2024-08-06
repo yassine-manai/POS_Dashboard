@@ -43,32 +43,49 @@
                     {% for pos in carpark.pos %}
                     <div class="card">
                         <div class="card-body">
-                            <div class="card-header">
-                                <h3 class="card-title">{{ pos.name }}</h3>
-                            </div>
                             <div class="card-content">
                                 <div class="card-info">
-                                    <p class="card-text"><strong>IP Address:</strong> {{ pos.ip }}</p>
-                                </div>
-                                <div class="card-actions">
-                                    <button class="button edit"
-                                        onclick="openEditModal('{{ pos.name }}', '{{ pos.name }}', '{{ carpark.name}}', '{{ pos.ip }}', '{{ pos.password }}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="button delete"
-                                        onclick="confirmDelete('{{ carpark.id }}', '{{ pos.name }}')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                    <button class="button load"
-                                        onclick="loadCardData('{{ carpark.id }}', '{{ pos.name }}')">
-                                        <i class="fas fa-sync-alt"></i> Load Data
-                                    </button>
+                                    <div class="card-info-container">
+                                        <div class="card-header-container">
+                                            <div class="card-title-container">
+                                                <h3 class="card-title">{{ pos.name }} - </h3>
+                                                <span class="card-ip">{{ pos.ip }}</span>
+                                                <button class="button edit"
+                                                    onclick="openEditModal('{{ pos.name }}', '{{ pos.name }}', '{{ carpark.name }}', '{{ pos.ip }}', '{{ pos.password }}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button> 
+
+                                                <button class="button delete"
+                                                    onclick="confirmDelete('{{ carpark.id }}', '{{ pos.name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                <button class="button load"
+                                                    onclick="loadCardData('{{ carpark.id }}', '{{ pos.name }}')">
+                                                    <i class="fas fa-sync-alt"></i> 
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+
                             <div class="card-services" id="services-{{ carpark.id }}-{{ pos.name }}"
                                 style="display: none;">
-                                <h3>Docker Services</h3>
-                                <ul class="services-list"></ul>
+                                <table id="servicesTable-{{ carpark.id }}-{{ pos.name }}" class="services-table">
+                                    <caption>Docker Services</caption>
+                                    <thead>
+                                        <tr>
+                                            <th>Service Name</th>
+                                            <th>Image Name</th>
+                                            <th>Version</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Data will be inserted here -->
+                                    </tbody>
+                                </table>
+                                <br>
                                 <button class="button view-compose"
                                     onclick="viewDockerCompose('{{ carpark.id }}', '{{ pos.name }}')">
                                     View Docker Compose
@@ -85,6 +102,7 @@
         </div>
         {% endfor %}
     </div>
+
 
 
 
@@ -210,6 +228,7 @@
         </div>
     </div>
 
+
     <!-- Add Carpark Modal -->
     <div id="addCarparkModal" class="modal animate__animated animate__fadeIn">
         <div class="modal-content">
@@ -285,25 +304,34 @@
         function openAddModal(carparkId, carparkName) {
             document.getElementById('addForm').action = `/add/${carparkId}`;
             document.getElementById('addCarparkId').value = carparkId;
-            document.getElementById('site').value = carparkName; 
+            document.getElementById('site').value = carparkName;
             document.getElementById('addModal').style.display = 'flex';
         }
 
         function loadCardData(carparkId, posName) {
             const servicesContainer = document.getElementById(`services-${carparkId}-${posName}`);
-            const servicesList = servicesContainer.querySelector('.services-list');
-            servicesList.innerHTML = '<li>Loading...</li>';
+            const servicesTable = servicesContainer.querySelector('table tbody');
+            servicesTable.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
             servicesContainer.style.display = 'block';
 
             fetch(`/load_data/${carparkId}/${posName}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        servicesList.innerHTML = '';
+                        servicesTable.innerHTML = '';
                         data.services.forEach(service => {
-                            const li = document.createElement('li');
-                            li.textContent = `${service.name}: ${service.image}`;
-                            servicesList.appendChild(li);
+                            const serviceName = service.name;
+                            const imageAndVersion = service.image.split(':');
+                            const imageName = imageAndVersion[0];
+                            const version = imageAndVersion[1] || 'N/A';
+
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                        <td>${serviceName}</td>
+                        <td>${imageName}</td>
+                        <td>${version}</td>
+                    `;
+                            servicesTable.appendChild(row);
                         });
 
                         // Open the accordion dynamically
@@ -312,30 +340,34 @@
                             toggleAccordion(accordionHeader);
                         }
                     } else {
-                        servicesList.innerHTML = `<li>Error: ${data.message}</li>`;
+                        servicesTable.innerHTML = `<tr><td colspan="3">Error: ${data.message}</td></tr>`;
                     }
                 })
                 .catch(error => {
-                    servicesList.innerHTML = `<li>Error: ${error.message}</li>`;
+                    servicesTable.innerHTML = `<tr><td colspan="3">Error: ${error.message}</td></tr>`;
                 });
         }
 
         function viewDockerCompose(carparkId, posName) {
             fetch(`/load_data/${carparkId}/${posName}`)
-                .then(response => response.json())
+                .then(response => response.text()) // Get response as text
                 .then(data => {
-                    if (data.success) {
-                        const dockerComposeData = JSON.stringify(data.docker_compose, null, 2);
-                        document.getElementById('dockerComposeData').textContent = dockerComposeData;
-                        document.getElementById('dockerComposeModal').style.display = 'flex';
-                    } else {
-                        alert(`Error: ${data.message}`);
-                    }
+                    // Ensure the Docker Compose modal takes up full screen
+                    const modal = document.getElementById('dockerComposeModal');
+                    const dockerComposeData = data; // Data is already in YAML format
+
+                    // Display the YAML content in the modal
+                    document.getElementById('dockerComposeData').textContent = dockerComposeData;
+
+                    // Display the modal
+                    modal.style.display = 'flex';
                 })
                 .catch(error => {
                     alert(`Error: ${error.message}`);
                 });
         }
+
+
 
         window.onclick = function (event) {
             if (event.target.classList.contains('modal')) {
