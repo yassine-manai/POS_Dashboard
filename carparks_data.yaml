@@ -5,13 +5,15 @@ carparks:
   - ip: 192.168.1.7
     name: POS 741
     password: astero4711
-    site: null
+    site: Dasman Complex
     username: astero
-  - ip: 192.168.1.7
-    name: sdfsdf
-    password: astero4711
-    site: sousa
-    username: astero
+  - ip: 192.168.1.8
+    name: POS 742
+    password: astero47111
+    username: astero1
 - id: 15
   name: SARAFIN
+  pos: []
+- id: 7080
+  name: Gold Souk
   pos: []

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="icon" type="image/x-icon" href="../static/dash.png">
 </head>
 
 <body>
@@ -28,8 +29,7 @@
                     <h2>{{ carpark.name }} - {{ carpark.id }}</h2>
                     <div class="accordion-actions">
                         <button class="button add"
-                            onclick="openAddModal('{{ carpark.id }}', '{{ carpark.name }}'); event.stopPropagation();">Add
-                            New POS</button>
+                            onclick="openAddModal('{{ carpark.id }}', '{{ carpark.name }}'); event.stopPropagation();">Add New POS</button>
                         <button class="button delete"
                             onclick="confirmDeleteCarpark('{{ carpark.id }}'); event.stopPropagation();">Delete
                             Carpark</button>
@@ -48,21 +48,25 @@
                                     <div class="card-info-container">
                                         <div class="card-header-container">
                                             <div class="card-title-container">
-                                                <h3 class="card-title">{{ pos.name }} - </h3>
-                                                <span class="card-ip">{{ pos.ip }}</span>
-                                                <button class="button edit"
-                                                    onclick="openEditModal('{{ pos.name }}', '{{ pos.name }}', '{{ carpark.name }}', '{{ pos.ip }}', '{{ pos.password }}')">
-                                                    <i class="fas fa-edit"></i>
-                                                </button> 
+                                                <div class="infos"> 
+                                                    <h3 class="card-title">{{ pos.name }} - </h3>
+                                                    <span class="card-ip">{{ pos.ip }}</span>
+                                                </div>
+                                                <div class="actions">
+                                                    <button class="button edit"
+                                                        onclick="openEditModal('{{ carpark.id }}', '{{ pos.name }}', '{{ carpark.name }}', '{{ pos.ip }}', '{{ pos.username}}', '{{ pos.passwords}}')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
 
-                                                <button class="button delete"
-                                                    onclick="confirmDelete('{{ carpark.id }}', '{{ pos.name }}')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                                <button class="button load"
-                                                    onclick="loadCardData('{{ carpark.id }}', '{{ pos.name }}')">
-                                                    <i class="fas fa-sync-alt"></i> 
-                                                </button>
+                                                    <button class="button delete"
+                                                        onclick="confirmDelete('{{ carpark.id }}', '{{ pos.name }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                    <button class="button load"
+                                                        onclick="loadCardData('{{ carpark.id }}', '{{ pos.name }}')">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -287,6 +291,7 @@
             const modal = document.getElementById(modalId);
             modal.style.display = 'none';
         }
+
 
         function openEditModal(carparkId, name, site, ip, username, password) {
             document.getElementById('editForm').action = `/edit/${carparkId}/${name}`;

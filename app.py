@@ -29,7 +29,7 @@ def edit_config(carpark_id, pos_name):
         ip = request.form['ip']
         username = request.form['username'] or None
         password = request.form['password'] or None
-        site = request.form['site']
+        site = request.form['site']  # Get the site from the form
 
         carparks = read_config()
         for carpark in carparks:
@@ -41,7 +41,7 @@ def edit_config(carpark_id, pos_name):
                             'ip': ip,
                             'username': username,
                             'password': password,
-                            'site': site
+                            'site': site  # Update the site
                         })
                         break
                 break
@@ -69,7 +69,6 @@ def add_config(carpark_id):
     ip = request.form['ip']
     username = request.form['username'] or None
     password = request.form['password'] or None
-    site = request.form['site']
 
     carparks = read_config()
     for carpark in carparks:
@@ -79,7 +78,6 @@ def add_config(carpark_id):
                 'ip': ip,
                 'username': username,
                 'password': password,
-                'site': site
             })
             break
     write_config(carparks)
@@ -134,5 +132,17 @@ def delete_carpark(carpark_id):
     carparks = [carpark for carpark in carparks if carpark['id'] != carpark_id]
     write_config(carparks)
     return redirect(url_for('index'))
+
+@app.route('/check_pos_existence/<int:carpark_id>/<name>/<ip>')
+def check_pos_existence(carpark_id, name, ip):
+    carparks = read_config()
+    carpark = next((c for c in carparks if c['id'] == carpark_id), None)
+    
+    if carpark:
+        exists = any(pos['name'] == name or pos['ip'] == ip for pos in carpark['pos'])
+        return jsonify({'exists': exists})
+    
+    return jsonify({'exists': False})
+
 if __name__ == '__main__':
     app.run(debug=True)
